@@ -8,6 +8,9 @@ export function newProfile() {
     day: 1,
     planComplete: false,
     useHr: false,
+    age: null,
+    maxHr: null,
+    restingHr: null,
     zones: null,
     hrCeiling: null,
   };

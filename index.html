@@ -76,6 +76,7 @@
           <span class="tile-title">Heart rate</span>
           <span id="run-hr" class="tile-value"></span>
           <span id="run-hr-detail" class="tile-detail"></span>
+          <span id="run-hr-purpose" class="zone-box" hidden></span>
         </button>
         <div class="tile">
           <span class="tile-title">Next</span>
@@ -129,14 +130,26 @@
           <span>Uses a heart rate sensor</span>
         </label>
 
+        <section class="panel">
+          <h2>Calculate HR zones</h2>
+          <p>Enter a resting HR and an age. A measured max HR is more accurate than age, so use it if you have one. Results are estimates.</p>
+          <div class="zone-details">
+            <label class="field"><span>Resting HR</span><input id="settings-resting-hr" type="number" inputmode="numeric" min="30" max="120" /></label>
+            <label class="field"><span>Age</span><input id="settings-age" type="number" inputmode="numeric" min="10" max="100" /></label>
+            <label class="field"><span>Measured max HR (optional)</span><input id="settings-max-hr" type="number" inputmode="numeric" min="100" max="240" /></label>
+          </div>
+          <p id="settings-zone-message" class="message"></p>
+          <button type="button" id="settings-calculate" class="secondary">Calculate zones</button>
+        </section>
+
         <fieldset>
-          <legend>HR zones: bpm each zone starts at, from Garmin Connect</legend>
+          <legend>HR zones: bpm each zone starts at. Calculate them above or copy them from Garmin Connect.</legend>
           <div class="zones">
-            <label class="field"><span>Zone 1</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
-            <label class="field"><span>Zone 2</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
-            <label class="field"><span>Zone 3</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
-            <label class="field"><span>Zone 4</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
-            <label class="field"><span>Zone 5</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
+            <label class="field zone-field"><span class="zone-name"></span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /><span class="zone-box"></span></label>
+            <label class="field zone-field"><span class="zone-name"></span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /><span class="zone-box"></span></label>
+            <label class="field zone-field"><span class="zone-name"></span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /><span class="zone-box"></span></label>
+            <label class="field zone-field"><span class="zone-name"></span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /><span class="zone-box"></span></label>
+            <label class="field zone-field"><span class="zone-name"></span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /><span class="zone-box"></span></label>
           </div>
         </fieldset>
 

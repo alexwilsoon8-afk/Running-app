@@ -1,6 +1,8 @@
 import {
   SEGMENT_LABELS,
   SWITCH_RUNNER_SECONDS,
+  ZONE_INFO,
+  calculateZones,
   cuesBetween,
   describeSession,
   formatClock,
@@ -237,14 +239,17 @@ function renderRunHr() {
   const button = $("run-hr-tile");
   const live = profile.useHr && hr.connected;
   const zone = live ? zoneFor(hr.bpm, profile.zones) : null;
+  const info = zone ? ZONE_INFO[zone - 1] : null;
 
+  $("run-hr-purpose").hidden = !info;
+  $("run-hr-purpose").textContent = info?.purpose ?? "";
   button.disabled = !profile.useHr || hr.status === "connected" || hr.status === "lost";
   if (!profile.useHr) {
     value.textContent = "--";
     detail.textContent = "HR off";
   } else if (live) {
     value.textContent = hr.bpm;
-    detail.textContent = zone == null ? "bpm" : zone === 0 ? "Below zone 1" : `Zone ${zone}`;
+    detail.textContent = zone == null ? "bpm" : zone === 0 ? "Below zone 1" : `Zone ${zone}: ${info.name}`;
   } else if (hr.status === "lost") {
     value.textContent = "--";
     detail.textContent = "HR lost";
@@ -431,6 +436,10 @@ function openSettings(profile) {
   $("settings-title").textContent = profile ? `${profile.name}'s settings` : "New runner";
   $("settings-name").value = shown.name;
   $("settings-use-hr").checked = shown.useHr;
+  $("settings-age").value = shown.age ?? "";
+  $("settings-max-hr").value = shown.maxHr ?? "";
+  $("settings-resting-hr").value = shown.restingHr ?? "";
+  $("settings-zone-message").textContent = "";
   document.querySelectorAll(".zone-input").forEach((input, i) => {
     input.value = shown.zones?.[i] ?? "";
   });
@@ -440,6 +449,27 @@ function openSettings(profile) {
   renderHrStatus();
   showScreen("settings");
   if (!profile) $("settings-name").focus();
+}
+
+function readZoneDetails() {
+  return {
+    age: Number($("settings-age").value) || null,
+    maxHr: Number($("settings-max-hr").value) || null,
+    restingHr: Number($("settings-resting-hr").value) || null,
+  };
+}
+
+function fillZones() {
+  const zones = calculateZones(readZoneDetails());
+  const message = $("settings-zone-message");
+  if (!zones) {
+    message.textContent = "Enter a resting HR, plus an age or max HR. Resting HR must be below max HR.";
+    return;
+  }
+  document.querySelectorAll(".zone-input").forEach((input, i) => {
+    input.value = zones[i];
+  });
+  message.textContent = "";
 }
 
 function saveSettings(event) {
@@ -464,6 +494,7 @@ function saveSettings(event) {
   }
   selected.name = name;
   selected.useHr = $("settings-use-hr").checked;
+  Object.assign(selected, readZoneDetails());
   selected.zones = entered ? zones : null;
   selected.hrCeiling = Number($("settings-ceiling").value) || null;
   saveData(data);
@@ -471,6 +502,13 @@ function saveSettings(event) {
 }
 
 // Wiring
+
+function renderZoneLabels() {
+  document.querySelectorAll(".zone-field").forEach((field, i) => {
+    field.querySelector(".zone-name").textContent = `Zone ${i + 1}: ${ZONE_INFO[i].name}`;
+    field.querySelector(".zone-box").textContent = ZONE_INFO[i].purpose;
+  });
+}
 
 function bindEvents() {
   $("prep-back").addEventListener("click", renderHome);
@@ -494,6 +532,7 @@ function bindEvents() {
     renderHome();
   });
   $("settings-form").addEventListener("submit", saveSettings);
+  $("settings-calculate").addEventListener("click", fillZones);
   $("settings-back").addEventListener("click", renderHome);
   $("settings-connect").addEventListener("click", () => pairHr("settings-hr-message"));
 
@@ -516,6 +555,7 @@ function bindEvents() {
 
 async function init() {
   bindEvents();
+  renderZoneLabels();
   plan = await (await fetch("plan.json")).json();
   if (data.active) offerResume();
   else renderHome();

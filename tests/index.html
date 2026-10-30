@@ -8,7 +8,7 @@
     <pre id="output"></pre>
     <script type="module">
       import {
-        cuesBetween, describeSession, formatClock, locate, nextDay, parseHeartRate,
+        ZONE_INFO, calculateZones, cuesBetween, describeSession, formatClock, locate, nextDay, parseHeartRate,
         spokenDuration, spokenSegment, totalSeconds, zoneFor,
       } from "../js/engine.js";
 
@@ -78,6 +78,15 @@
       check("zone 5 and above", zoneFor(200, zones), 5);
       check("no zones", zoneFor(150, null), null);
       check("no bpm", zoneFor(null, zones), null);
+
+      check("five named zones", ZONE_INFO.filter((z) => z.name && z.purpose).length, 5);
+      // Worked example from the evidence document: age 35, resting 60.
+      check("zones from age and resting HR", calculateZones({ age: 35, restingHr: 60 }), [60, 110, 134, 153, 172]);
+      check("measured max beats age", calculateZones({ age: 35, maxHr: 190, restingHr: 60 }), [60, 112, 138, 158, 177]);
+      check("max HR alone isn't enough", calculateZones({ maxHr: 190 }), null);
+      check("resting HR alone isn't enough", calculateZones({ restingHr: 60 }), null);
+      check("no details", calculateZones({}), null);
+      check("resting not below max", calculateZones({ maxHr: 100, restingHr: 100 }), null);
 
       check("clock", formatClock(90), "1:30");
       check("clock rounds up", formatClock(89.2), "1:30");

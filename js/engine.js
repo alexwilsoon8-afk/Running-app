@@ -16,6 +16,15 @@ const SPOKEN_LABELS = {
 
 export const WARNING_SECONDS = 10;
 export const SWITCH_RUNNER_SECONDS = 120;
+const ZONE_START_RESERVE = [0, 0.4, 0.6, 0.75, 0.9];
+
+export const ZONE_INFO = [
+  { name: "Recovery", purpose: "Recovery" },
+  { name: "Aerobic base", purpose: "Endurance" },
+  { name: "Tempo", purpose: "Stamina" },
+  { name: "Threshold", purpose: "Threshold" },
+  { name: "Max", purpose: "Power" },
+];
 
 export function totalSeconds(segments) {
   return segments.reduce((sum, segment) => sum + segment.seconds, 0);
@@ -65,6 +74,14 @@ export function zoneFor(bpm, zones) {
     if (bpm >= zones[i]) return i + 1;
   }
   return 0;
+}
+
+// Heart rate reserve (Karvonen) zones. A measured max HR always beats the
+// Tanaka age estimate.
+export function calculateZones({ age, maxHr, restingHr }) {
+  const max = maxHr || (age ? Math.round(208 - 0.7 * age) : null);
+  if (!max || !restingHr || restingHr >= max) return null;
+  return ZONE_START_RESERVE.map((share) => Math.round(restingHr + (max - restingHr) * share));
 }
 
 export function formatClock(seconds) {
