@@ -8,7 +8,7 @@
     <pre id="output"></pre>
     <script type="module">
       import {
-        ZONE_INFO, calculateZones, cuesBetween, describeSession, formatClock, locate, nextDay, parseHeartRate,
+        GARMIN_ZONE_INFO, ZONE_INFO, calculateGarminZones, calculateZones, cuesBetween, describeSession, formatClock, locate, nextDay, parseHeartRate,
         spokenDuration, spokenSegment, totalSeconds, zoneFor,
       } from "../js/engine.js";
 
@@ -80,6 +80,9 @@
       check("no bpm", zoneFor(null, zones), null);
 
       check("five named zones", ZONE_INFO.filter((z) => z.name && z.purpose).length, 5);
+      check("five Garmin zones", GARMIN_ZONE_INFO.filter((z) => z.name && z.purpose).length, 5);
+      check("Garmin zones from max HR", calculateGarminZones(190), [95, 114, 133, 152, 171]);
+      check("Garmin zones need max HR", calculateGarminZones(null), null);
       // Worked example from the evidence document: age 35, resting 60.
       check("zones from age and resting HR", calculateZones({ age: 35, restingHr: 60 }), [60, 110, 134, 153, 172]);
       check("measured max beats age", calculateZones({ age: 35, maxHr: 190, restingHr: 60 }), [60, 112, 138, 158, 177]);

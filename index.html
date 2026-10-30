@@ -131,12 +131,12 @@
         </label>
 
         <section class="panel">
-          <h2>Calculate HR zones</h2>
-          <p>Enter a resting HR and an age. A measured max HR is more accurate than age, so use it if you have one. Results are estimates.</p>
+          <h2 id="settings-zone-title"></h2>
+          <p id="settings-zone-intro"></p>
           <div class="zone-details">
-            <label class="field"><span>Resting HR</span><input id="settings-resting-hr" type="number" inputmode="numeric" min="30" max="120" /></label>
-            <label class="field"><span>Age</span><input id="settings-age" type="number" inputmode="numeric" min="10" max="100" /></label>
-            <label class="field"><span>Measured max HR (optional)</span><input id="settings-max-hr" type="number" inputmode="numeric" min="100" max="240" /></label>
+            <label id="settings-resting-field" class="field"><span>Resting HR</span><input id="settings-resting-hr" type="number" inputmode="numeric" min="30" max="120" /></label>
+            <label id="settings-age-field" class="field"><span>Age</span><input id="settings-age" type="number" inputmode="numeric" min="10" max="100" /></label>
+            <label class="field"><span id="settings-max-label"></span><input id="settings-max-hr" type="number" inputmode="numeric" min="100" max="240" /></label>
           </div>
           <p id="settings-zone-message" class="message"></p>
           <button type="button" id="settings-calculate" class="secondary">Calculate zones</button>

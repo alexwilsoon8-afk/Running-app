@@ -17,6 +17,7 @@ const SPOKEN_LABELS = {
 export const WARNING_SECONDS = 10;
 export const SWITCH_RUNNER_SECONDS = 120;
 const ZONE_START_RESERVE = [0, 0.4, 0.6, 0.75, 0.9];
+const GARMIN_ZONE_START_MAX = [0.5, 0.6, 0.7, 0.8, 0.9];
 
 export const ZONE_INFO = [
   { name: "Recovery", purpose: "Recovery" },
@@ -24,6 +25,14 @@ export const ZONE_INFO = [
   { name: "Tempo", purpose: "Stamina" },
   { name: "Threshold", purpose: "Threshold" },
   { name: "Max", purpose: "Power" },
+];
+
+export const GARMIN_ZONE_INFO = [
+  { name: "Warm up", purpose: "Recovery" },
+  { name: "Easy", purpose: "Endurance" },
+  { name: "Aerobic", purpose: "Stamina" },
+  { name: "Threshold", purpose: "Threshold" },
+  { name: "Maximum", purpose: "Power" },
 ];
 
 export function totalSeconds(segments) {
@@ -82,6 +91,13 @@ export function calculateZones({ age, maxHr, restingHr }) {
   const max = maxHr || (age ? Math.round(208 - 0.7 * age) : null);
   if (!max || !restingHr || restingHr >= max) return null;
   return ZONE_START_RESERVE.map((share) => Math.round(restingHr + (max - restingHr) * share));
+}
+
+// Garmin's default zones, so the app agrees with the watch. The broadcast only
+// carries bpm, so the max HR has to be typed in.
+export function calculateGarminZones(maxHr) {
+  if (!maxHr) return null;
+  return GARMIN_ZONE_START_MAX.map((share) => Math.round(maxHr * share));
 }
 
 export function formatClock(seconds) {

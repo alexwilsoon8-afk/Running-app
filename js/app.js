@@ -1,7 +1,9 @@
 import {
   SEGMENT_LABELS,
+  GARMIN_ZONE_INFO,
   SWITCH_RUNNER_SECONDS,
   ZONE_INFO,
+  calculateGarminZones,
   calculateZones,
   cuesBetween,
   describeSession,
@@ -239,7 +241,7 @@ function renderRunHr() {
   const button = $("run-hr-tile");
   const live = profile.useHr && hr.connected;
   const zone = live ? zoneFor(hr.bpm, profile.zones) : null;
-  const info = zone ? ZONE_INFO[zone - 1] : null;
+  const info = zone ? GARMIN_ZONE_INFO[zone - 1] : null;
 
   $("run-hr-purpose").hidden = !info;
   $("run-hr-purpose").textContent = info?.purpose ?? "";
@@ -439,10 +441,10 @@ function openSettings(profile) {
   $("settings-age").value = shown.age ?? "";
   $("settings-max-hr").value = shown.maxHr ?? "";
   $("settings-resting-hr").value = shown.restingHr ?? "";
-  $("settings-zone-message").textContent = "";
   document.querySelectorAll(".zone-input").forEach((input, i) => {
     input.value = shown.zones?.[i] ?? "";
   });
+  renderZoneMethod();
   $("settings-ceiling").value = shown.hrCeiling ?? "";
   $("settings-message").textContent = "";
   $("settings-hr-message").textContent = "";
@@ -460,10 +462,14 @@ function readZoneDetails() {
 }
 
 function fillZones() {
-  const zones = calculateZones(readZoneDetails());
+  const details = readZoneDetails();
+  const garmin = $("settings-use-hr").checked;
+  const zones = garmin ? calculateGarminZones(details.maxHr) : calculateZones(details);
   const message = $("settings-zone-message");
   if (!zones) {
-    message.textContent = "Enter a resting HR, plus an age or max HR. Resting HR must be below max HR.";
+    message.textContent = garmin
+      ? "Enter your max HR from the watch or Garmin Connect."
+      : "Enter a resting HR, plus an age or max HR. Resting HR must be below max HR.";
     return;
   }
   document.querySelectorAll(".zone-input").forEach((input, i) => {
@@ -503,10 +509,21 @@ function saveSettings(event) {
 
 // Wiring
 
-function renderZoneLabels() {
+// A ticked sensor box means Garmin's zones. Otherwise the evidence-based ones.
+function renderZoneMethod() {
+  const garmin = $("settings-use-hr").checked;
+  const info = garmin ? GARMIN_ZONE_INFO : ZONE_INFO;
+  $("settings-zone-title").textContent = garmin ? "Use Garmin's zones" : "Calculate HR zones";
+  $("settings-zone-intro").textContent = garmin
+    ? "Enter your max HR from the watch or Garmin Connect. If you've customised your zones, type all five below instead."
+    : "Enter a resting HR and an age. A measured max HR is more accurate than age, so use it if you have one. Results are estimates.";
+  $("settings-max-label").textContent = garmin ? "Max HR from Garmin" : "Measured max HR (optional)";
+  $("settings-resting-field").hidden = garmin;
+  $("settings-age-field").hidden = garmin;
+  $("settings-zone-message").textContent = "";
   document.querySelectorAll(".zone-field").forEach((field, i) => {
-    field.querySelector(".zone-name").textContent = `Zone ${i + 1}: ${ZONE_INFO[i].name}`;
-    field.querySelector(".zone-box").textContent = ZONE_INFO[i].purpose;
+    field.querySelector(".zone-name").textContent = `Zone ${i + 1}: ${info[i].name}`;
+    field.querySelector(".zone-box").textContent = info[i].purpose;
   });
 }
 
@@ -533,6 +550,7 @@ function bindEvents() {
   });
   $("settings-form").addEventListener("submit", saveSettings);
   $("settings-calculate").addEventListener("click", fillZones);
+  $("settings-use-hr").addEventListener("change", renderZoneMethod);
   $("settings-back").addEventListener("click", renderHome);
   $("settings-connect").addEventListener("click", () => pairHr("settings-hr-message"));
 
@@ -555,7 +573,6 @@ function bindEvents() {
 
 async function init() {
   bindEvents();
-  renderZoneLabels();
   plan = await (await fetch("plan.json")).json();
   if (data.active) offerResume();
   else renderHome();
