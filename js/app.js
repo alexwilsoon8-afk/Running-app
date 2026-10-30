@@ -7,6 +7,7 @@ import {
   calculateGarminZones,
   calculateZones,
   cuesBetween,
+  describeIntervals,
   describeSession,
   formatClock,
   locate,
@@ -47,6 +48,7 @@ function showScreen(name) {
   document.querySelectorAll(".screen").forEach((screen) => {
     screen.hidden = screen.id !== `screen-${name}`;
   });
+  window.scrollTo(0, 0);
 }
 
 function profileById(id) {
@@ -81,6 +83,9 @@ function renderHome() {
       : `Week ${profile.week}, Day ${profile.day}`;
     card.querySelector(".profile-session").textContent = describeSession(session.segments);
     card.querySelector(".profile-pick").addEventListener("click", () => openPrep(profile));
+    const planButton = card.querySelector(".profile-plan");
+    planButton.setAttribute("aria-label", `${profile.name}'s plan`);
+    planButton.addEventListener("click", () => openPlan(profile));
     const settings = card.querySelector(".profile-settings");
     settings.setAttribute("aria-label", `${profile.name} settings`);
     settings.addEventListener("click", () => openSettings(profile));
@@ -93,6 +98,58 @@ function renderHome() {
   add.addEventListener("click", () => openSettings(null));
   list.append(add);
   showScreen("home");
+}
+
+// Plan overview
+
+function weekStatus(profile, week) {
+  if (profile.planComplete || week < profile.week) return "Done";
+  return week === profile.week ? `This week: Day ${profile.day} is next` : "Upcoming";
+}
+
+// Days with the same session share a row, so most weeks read as one line.
+function groupWeekDays(week) {
+  const groups = [];
+  for (const entry of plan.filter((candidate) => candidate.week === week)) {
+    const text = describeIntervals(entry.segments);
+    const last = groups.at(-1);
+    if (last?.text === text) last.days.push(entry.day);
+    else groups.push({ text, days: [entry.day], segments: entry.segments });
+  }
+  return groups;
+}
+
+function openPlan(profile) {
+  $("plan-title").textContent = `${profile.name}'s plan`;
+  const list = $("plan-weeks");
+  list.replaceChildren();
+  let current = null;
+  for (const week of new Set(plan.map((entry) => entry.week))) {
+    const card = $("plan-week-template").content.cloneNode(true);
+    const section = card.querySelector(".plan-week");
+    const status = weekStatus(profile, week);
+    card.querySelector(".plan-week-title").textContent = `Week ${week}`;
+    card.querySelector(".plan-week-status").textContent = status;
+    if (week === profile.week && !profile.planComplete) {
+      section.classList.add("current");
+      current = section;
+    }
+    if (status === "Done") section.classList.add("done");
+    const days = card.querySelector(".plan-days");
+    for (const group of groupWeekDays(week)) {
+      const row = $("plan-day-template").content.cloneNode(true);
+      const first = group.days[0];
+      const last = group.days.at(-1);
+      row.querySelector(".plan-day-label").textContent =
+        first === last ? `Day ${first}` : `Days ${first} to ${last}`;
+      row.querySelector(".plan-day-steps").textContent = group.text;
+      row.querySelector(".plan-day-total").textContent = describeSession(group.segments);
+      days.append(row);
+    }
+    list.append(card);
+  }
+  showScreen("plan");
+  current?.scrollIntoView({ block: "center" });
 }
 
 // Before the run
@@ -551,6 +608,7 @@ function renderZoneMethod() {
 }
 
 function bindEvents() {
+  $("plan-back").addEventListener("click", renderHome);
   $("prep-back").addEventListener("click", renderHome);
   $("prep-connect").addEventListener("click", () => pairHr("prep-hr-message"));
   $("prep-start").addEventListener("click", () => startRun(selected));

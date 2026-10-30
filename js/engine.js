@@ -138,6 +138,20 @@ export function describeSession(segments) {
   return `${count}, ${shortDuration(running)} running, ${shortDuration(totalSeconds(segments))} total`;
 }
 
+// Plain-English run and walk steps, without the warm-up and cool-down.
+export function describeIntervals(segments) {
+  const steps = segments.filter((segment) => segment.type === "run" || segment.type === "walk");
+  const step = (segment) => `${segment.type} ${shortDuration(segment.seconds)}`;
+  const repeating = steps.length >= 5 && steps.every((segment, i) => {
+    const pair = steps[i % 2];
+    return segment.type === pair.type && segment.seconds === pair.seconds;
+  });
+  const text = repeating
+    ? `repeat ${Math.floor(steps.length / 2)} times: ${step(steps[0])}, ${step(steps[1])}, then ${step(steps.at(-1))}`
+    : steps.map(step).join(", ");
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 // Standard Heart Rate Measurement (0x2A37): bit 0 of the flags byte says
 // whether the value is one byte or two.
 export function parseHeartRate(dataView) {

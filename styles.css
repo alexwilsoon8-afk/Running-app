@@ -171,6 +171,79 @@ p {
   text-align: left;
 }
 
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.profile-actions button {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+}
+
+.plan-weeks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-week {
+  padding: 18px 20px;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.plan-week.current {
+  border-color: var(--text);
+  background: var(--surface-raised);
+}
+
+.plan-week.done .plan-week-title::before {
+  content: "\2713\00a0";
+}
+
+.plan-week-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 8px;
+}
+
+.plan-week-status {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.plan-week.current .plan-week-status {
+  color: var(--text);
+}
+
+.plan-days {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-day {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 2px 16px;
+}
+
+.plan-day-steps {
+  overflow-wrap: anywhere;
+}
+
+.plan-day-total {
+  grid-column: 2;
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
 .add-runner {
   min-height: 300px;
   border: 3px dashed var(--text-muted);

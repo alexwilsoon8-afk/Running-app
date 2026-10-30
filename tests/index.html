@@ -8,7 +8,7 @@
     <pre id="output"></pre>
     <script type="module">
       import {
-        GARMIN_ZONE_INFO, ZONE_INFO, calculateGarminZones, calculateZones, cuesBetween, describeSession, sustainedPeak, formatClock, locate, nextDay, parseHeartRate,
+        GARMIN_ZONE_INFO, ZONE_INFO, calculateGarminZones, calculateZones, cuesBetween, describeIntervals, describeSession, sustainedPeak, formatClock, locate, nextDay, parseHeartRate,
         spokenDuration, spokenSegment, totalSeconds, zoneFor,
       } from "../js/engine.js";
 
@@ -66,6 +66,13 @@
       check("change fires at boundary", cuesBetween(s, 299.9, 300.1).map((c) => c.kind), ["change"]);
       check("no cue mid-segment", cuesBetween(s, 100, 101), []);
       check("final change has no next", cuesBetween(s, totalSeconds(s) - 0.1, totalSeconds(s) + 0.1)[0].next, null);
+
+      check("W1 steps", describeIntervals(session(1, 1)), "Repeat 7 times: run 1 min, walk 1.5 min, then run 1 min");
+      check("W2 steps", describeIntervals(session(2, 1)), "Repeat 5 times: run 1.5 min, walk 2 min, then run 1.5 min");
+      check("W3 steps", describeIntervals(session(3, 1)), "Run 1.5 min, walk 1.5 min, run 3 min, walk 3 min, run 1.5 min, walk 1.5 min, run 3 min");
+      check("W5D1 steps", describeIntervals(session(5, 1)), "Repeat 2 times: run 5 min, walk 3 min, then run 5 min");
+      check("W5D2 steps", describeIntervals(session(5, 2)), "Run 8 min, walk 5 min, run 8 min");
+      check("W9 steps", describeIntervals(session(9, 1)), "Run 30 min");
 
       check("next day", nextDay(1, 1), { week: 1, day: 2 });
       check("next week", nextDay(1, 3), { week: 2, day: 1 });

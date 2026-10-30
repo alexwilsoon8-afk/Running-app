@@ -23,8 +23,38 @@
           <span class="profile-progress"></span>
           <span class="profile-session"></span>
         </button>
-        <button type="button" class="profile-settings secondary">Settings</button>
+        <div class="profile-actions">
+          <button type="button" class="profile-plan secondary">Plan</button>
+          <button type="button" class="profile-settings secondary">Settings</button>
+        </div>
       </section>
+    </template>
+
+    <main id="screen-plan" class="screen page" hidden>
+      <h1 id="plan-title"></h1>
+      <p class="lead">Every run also has a 5 min warm-up walk and a 5 min cool-down walk.</p>
+      <div id="plan-weeks" class="plan-weeks"></div>
+      <div class="actions">
+        <button type="button" id="plan-back" class="secondary">Back</button>
+      </div>
+    </main>
+
+    <template id="plan-week-template">
+      <section class="plan-week">
+        <div class="plan-week-header">
+          <h2 class="plan-week-title"></h2>
+          <span class="plan-week-status"></span>
+        </div>
+        <div class="plan-days"></div>
+      </section>
+    </template>
+
+    <template id="plan-day-template">
+      <div class="plan-day">
+        <strong class="plan-day-label"></strong>
+        <span class="plan-day-steps"></span>
+        <span class="plan-day-total"></span>
+      </div>
     </template>
 
     <main id="screen-prep" class="screen page" hidden>
