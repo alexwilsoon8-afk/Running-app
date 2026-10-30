@@ -8,7 +8,7 @@
     <pre id="output"></pre>
     <script type="module">
       import {
-        GARMIN_ZONE_INFO, ZONE_INFO, calculateGarminZones, calculateZones, cuesBetween, describeSession, formatClock, locate, nextDay, parseHeartRate,
+        GARMIN_ZONE_INFO, ZONE_INFO, calculateGarminZones, calculateZones, cuesBetween, describeSession, sustainedPeak, formatClock, locate, nextDay, parseHeartRate,
         spokenDuration, spokenSegment, totalSeconds, zoneFor,
       } from "../js/engine.js";
 
@@ -83,6 +83,10 @@
       check("five Garmin zones", GARMIN_ZONE_INFO.filter((z) => z.name && z.purpose).length, 5);
       check("Garmin zones from max HR", calculateGarminZones(190), [95, 114, 133, 152, 171]);
       check("Garmin zones need max HR", calculateGarminZones(null), null);
+      check("peak needs five readings", sustainedPeak([190, 190, 190, 190], 150), 150);
+      check("peak ignores a spike", sustainedPeak([150, 151, 220, 152, 150], 140), 150);
+      check("peak is the level held", sustainedPeak([185, 188, 186, 187, 190], 150), 185);
+      check("peak never falls", sustainedPeak([120, 120, 120, 120, 120], 150), 150);
       // Worked example from the evidence document: age 35, resting 60.
       check("zones from age and resting HR", calculateZones({ age: 35, restingHr: 60 }), [60, 110, 134, 153, 172]);
       check("measured max beats age", calculateZones({ age: 35, maxHr: 190, restingHr: 60 }), [60, 112, 138, 158, 177]);

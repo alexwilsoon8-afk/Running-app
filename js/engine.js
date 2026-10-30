@@ -16,6 +16,7 @@ const SPOKEN_LABELS = {
 
 export const WARNING_SECONDS = 10;
 export const SWITCH_RUNNER_SECONDS = 120;
+export const HR_PEAK_READINGS = 5;
 const ZONE_START_RESERVE = [0, 0.4, 0.6, 0.75, 0.9];
 const GARMIN_ZONE_START_MAX = [0.5, 0.6, 0.7, 0.8, 0.9];
 
@@ -98,6 +99,13 @@ export function calculateZones({ age, maxHr, restingHr }) {
 export function calculateGarminZones(maxHr) {
   if (!maxHr) return null;
   return GARMIN_ZONE_START_MAX.map((share) => Math.round(maxHr * share));
+}
+
+// The highest level held for a run of readings, so one bad reading can't
+// count as a new max HR. The watch sends about one reading a second.
+export function sustainedPeak(readings, peak) {
+  if (readings.length < HR_PEAK_READINGS) return peak;
+  return Math.max(peak, Math.min(...readings.slice(-HR_PEAK_READINGS)));
 }
 
 export function formatClock(seconds) {

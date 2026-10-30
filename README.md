@@ -17,7 +17,7 @@ Web Bluetooth only works over HTTPS, so the app needs hosting. Free option, GitH
 2. Chrome menu > **Add to Home screen**, then open the app from the home screen icon.
 3. Allow Nearby devices when Chrome asks. Keep Bluetooth on, and Location too if the watch doesn't appear in the list.
 4. Tap **Add runner** and enter a name for each person. Tick **Uses a heart rate sensor** for anyone wearing one.
-5. For those people, enter the max HR from the watch or Garmin Connect and tap **Calculate zones**. This uses Garmin's default zones, so it matches the watch unless the zones were customised; if they were, type all five in. The watch's broadcast only sends bpm, so update the max HR here if it changes on Garmin. Set an HR ceiling if you want one.
+5. For those people, enter the max HR from the watch or Garmin Connect and tap **Calculate zones**. This uses Garmin's default zones, so it matches the watch unless the zones were customised; if they were, type all five in. The watch's broadcast only sends bpm, so update the max HR here if it changes on Garmin. If a run holds a heart rate above the saved max for about 5 seconds, the finish screen offers to update it. Set an HR ceiling if you want one.
 6. With the box unticked, Settings offers evidence-based zones from resting HR and age instead. There's no live HR without a sensor, so these are for reference and the run screen colours follow RUN/WALK.
 
 ## Test heart rate first

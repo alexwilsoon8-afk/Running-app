@@ -1,6 +1,7 @@
 import {
   SEGMENT_LABELS,
   GARMIN_ZONE_INFO,
+  HR_PEAK_READINGS,
   SWITCH_RUNNER_SECONDS,
   ZONE_INFO,
   calculateGarminZones,
@@ -11,6 +12,7 @@ import {
   locate,
   nextDay,
   spokenSegment,
+  sustainedPeak,
   totalSeconds,
   zoneFor,
 } from "./engine.js";
@@ -36,6 +38,7 @@ let lastElapsed = 0;
 let lastSave = 0;
 let hrHighSince = null;
 let lastHrBanner = 0;
+let recentHr = [];
 let bannerTimer = null;
 let wakeLock = null;
 let unlockTimer = null;
@@ -155,7 +158,8 @@ function startRun(profile) {
 }
 
 function beginRun(state) {
-  run = { ...state, resumedAt: Date.now() };
+  run = { hrPeak: 0, ...state, resumedAt: Date.now() };
+  recentHr = [];
   lastElapsed = elapsedSeconds();
   lastSave = Date.now();
   hrHighSince = null;
@@ -274,6 +278,8 @@ function recordHr(bpm) {
   run.hrSum += bpm;
   run.hrCount += 1;
   run.hrMax = Math.max(run.hrMax, bpm);
+  recentHr = [...recentHr, bpm].slice(-HR_PEAK_READINGS);
+  run.hrPeak = sustainedPeak(recentHr, run.hrPeak);
 }
 
 function checkHrCeiling() {
@@ -331,6 +337,8 @@ function switchRunner() {
   run.hrSum = 0;
   run.hrCount = 0;
   run.hrMax = 0;
+  run.hrPeak = 0;
+  recentHr = [];
   persistRun();
   showBanner(`${other.name} is running`);
   renderRun();
@@ -386,7 +394,22 @@ function renderFinish() {
   $("finish-time").textContent = formatClock(run.accumulatedMs / 1000);
   $("finish-avg-hr").textContent = run.hrCount ? Math.round(run.hrSum / run.hrCount) : "--";
   $("finish-max-hr").textContent = run.hrCount ? run.hrMax : "--";
+  const profile = profileById(run.profileId);
+  const newPeak = profile.useHr && profile.maxHr && run.hrPeak > profile.maxHr;
+  $("finish-peak").hidden = !newPeak;
+  $("finish-peak-update").hidden = false;
+  $("finish-peak-text").textContent =
+    `New highest HR: ${run.hrPeak}. Your max HR is ${profile.maxHr}. Update it? This replaces your saved zones.`;
   showScreen("finish");
+}
+
+function updateMaxHr() {
+  const profile = profileById(run.profileId);
+  profile.maxHr = run.hrPeak;
+  profile.zones = calculateGarminZones(run.hrPeak);
+  saveData(data);
+  $("finish-peak-update").hidden = true;
+  $("finish-peak-text").textContent = `Max HR updated to ${run.hrPeak}, and your zones have been recalculated.`;
 }
 
 function settleRun(counted) {
@@ -537,6 +560,7 @@ function bindEvents() {
   $("switch-button").addEventListener("click", switchRunner);
   $("lock-button").addEventListener("click", () => setLocked(true));
   $("run-hr-tile").addEventListener("click", () => pairHr("prep-hr-message"));
+  $("finish-peak-update").addEventListener("click", updateMaxHr);
   $("finish-yes").addEventListener("click", () => settleRun(true));
   $("finish-no").addEventListener("click", () => settleRun(false));
   $("resume-yes").addEventListener("click", () => {
