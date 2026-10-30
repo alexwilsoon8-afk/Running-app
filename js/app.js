@@ -473,6 +473,7 @@ function settleRun(counted) {
   const profile = profileById(run.profileId);
   data.runs.push({
     date: new Date().toISOString(),
+    runnerId: profile.id,
     runner: profile.name,
     week: run.week,
     day: run.day,
@@ -528,9 +529,28 @@ function openSettings(profile) {
   $("settings-ceiling").value = shown.hrCeiling ?? "";
   $("settings-message").textContent = "";
   $("settings-hr-message").textContent = "";
+  $("settings-delete").hidden = !profile;
+  setDeleteConfirm(false);
   renderHrStatus();
   showScreen("settings");
   if (!profile) $("settings-name").focus();
+}
+
+function setDeleteConfirm(open) {
+  $("delete-runner").hidden = open;
+  $("delete-confirm").hidden = !open;
+  if (open) {
+    $("delete-text").textContent =
+      `Delete ${selected.name}? This permanently removes their progress, zones and run history.`;
+  }
+}
+
+function deleteRunner() {
+  data.profiles = data.profiles.filter((profile) => profile.id !== selected.id);
+  data.runs = data.runs.filter((entry) => entry.runnerId !== selected.id);
+  selected = null;
+  saveData(data);
+  renderHome();
 }
 
 function readZoneDetails() {
@@ -631,6 +651,9 @@ function bindEvents() {
     renderHome();
   });
   $("settings-form").addEventListener("submit", saveSettings);
+  $("delete-runner").addEventListener("click", () => setDeleteConfirm(true));
+  $("delete-cancel").addEventListener("click", () => setDeleteConfirm(false));
+  $("delete-yes").addEventListener("click", deleteRunner);
   $("settings-calculate").addEventListener("click", fillZones);
   $("settings-use-hr").addEventListener("change", renderZoneMethod);
   $("settings-back").addEventListener("click", renderHome);

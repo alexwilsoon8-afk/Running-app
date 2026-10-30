@@ -204,6 +204,17 @@
           <button type="button" id="settings-back" class="secondary">Back</button>
           <button type="submit" class="primary">Save</button>
         </div>
+
+        <section id="settings-delete" class="panel">
+          <button type="button" id="delete-runner" class="secondary">Delete runner</button>
+          <div id="delete-confirm" class="delete-confirm" hidden>
+            <p id="delete-text" class="status"></p>
+            <div class="actions">
+              <button type="button" id="delete-cancel" class="secondary">Keep runner</button>
+              <button type="button" id="delete-yes" class="danger">Delete</button>
+            </div>
+          </div>
+        </section>
       </form>
     </main>
   </body>

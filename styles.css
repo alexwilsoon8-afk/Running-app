@@ -75,6 +75,17 @@ input:focus-visible {
   background: var(--accent);
 }
 
+.danger {
+  background: var(--zone5);
+}
+
+.delete-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
 .ghost {
   background: var(--tile);
   padding: 8px 24px;
