@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#101418" />
+    <title>Treadmill C25K</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="module" src="js/app.js"></script>
+  </head>
+  <body>
+    <main id="screen-home" class="screen page" hidden>
+      <h1>Who's running?</h1>
+      <div id="profile-list" class="profile-list"></div>
+    </main>
+
+    <template id="profile-template">
+      <section class="profile">
+        <button type="button" class="profile-pick">
+          <span class="profile-name"></span>
+          <span class="profile-progress"></span>
+          <span class="profile-session"></span>
+        </button>
+        <button type="button" class="profile-settings secondary">Settings</button>
+      </section>
+    </template>
+
+    <main id="screen-prep" class="screen page" hidden>
+      <h1 id="prep-title"></h1>
+      <p id="prep-session" class="lead"></p>
+      <section id="prep-hr" class="panel">
+        <p>Start a Treadmill activity on the watch and turn on Broadcast HR, then connect.</p>
+        <p id="prep-hr-status" class="status"></p>
+        <p id="prep-hr-message" class="message"></p>
+        <button type="button" id="prep-connect" class="secondary">Connect heart rate</button>
+      </section>
+      <div class="actions">
+        <button type="button" id="prep-back" class="secondary">Back</button>
+        <button type="button" id="prep-start" class="primary">Start run</button>
+      </div>
+    </main>
+
+    <main id="screen-run" class="screen run" hidden>
+      <header class="run-top">
+        <span class="run-info">
+          <strong id="run-runner"></strong>
+          <span id="run-session"></span>
+          <span id="run-elapsed"></span>
+        </span>
+        <span class="run-controls">
+          <button type="button" id="switch-button" class="ghost" hidden></button>
+          <button type="button" id="pause-button" class="ghost">Pause</button>
+          <button type="button" id="lock-button" class="ghost">Lock</button>
+        </span>
+      </header>
+
+      <section class="run-centre">
+        <div id="banner" class="banner" role="status"></div>
+        <div id="run-main" class="run-main">
+          <div id="run-label" class="run-label"></div>
+          <div id="run-countdown" class="run-countdown"></div>
+        </div>
+        <div id="run-paused" class="run-paused" hidden>
+          <div class="run-label">PAUSED</div>
+          <div class="actions">
+            <button type="button" id="end-button" class="secondary">End run</button>
+            <button type="button" id="resume-button" class="primary">Resume</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="run-tiles">
+        <button type="button" id="run-hr-tile" class="tile">
+          <span class="tile-title">Heart rate</span>
+          <span id="run-hr" class="tile-value"></span>
+          <span id="run-hr-detail" class="tile-detail"></span>
+        </button>
+        <div class="tile">
+          <span class="tile-title">Next</span>
+          <span id="run-next" class="tile-value tile-value-text"></span>
+        </div>
+        <div class="tile">
+          <span class="tile-title">Run time left</span>
+          <span id="run-left" class="tile-value"></span>
+        </div>
+      </footer>
+
+      <div id="lock-overlay" class="lock-overlay" hidden>
+        <div class="lock-hint">
+          Locked. Hold for 2 seconds to unlock.
+          <span class="lock-progress"></span>
+        </div>
+      </div>
+    </main>
+
+    <main id="screen-finish" class="screen page" hidden>
+      <h1 id="finish-title"></h1>
+      <dl class="stats">
+        <div><dt>Time</dt><dd id="finish-time"></dd></div>
+        <div><dt>Average HR</dt><dd id="finish-avg-hr"></dd></div>
+        <div><dt>Max HR</dt><dd id="finish-max-hr"></dd></div>
+      </dl>
+      <div class="actions">
+        <button type="button" id="finish-no" class="secondary"></button>
+        <button type="button" id="finish-yes" class="primary"></button>
+      </div>
+    </main>
+
+    <main id="screen-resume" class="screen page" hidden>
+      <h1>Resume run?</h1>
+      <p id="resume-detail" class="lead"></p>
+      <div class="actions">
+        <button type="button" id="resume-no" class="secondary">Discard</button>
+        <button type="button" id="resume-yes" class="primary">Resume run</button>
+      </div>
+    </main>
+
+    <main id="screen-settings" class="screen page" hidden>
+      <h1 id="settings-title"></h1>
+      <form id="settings-form">
+        <label class="field">
+          <span>Name</span>
+          <input id="settings-name" type="text" maxlength="20" autocomplete="off" />
+        </label>
+        <label class="field check">
+          <input id="settings-use-hr" type="checkbox" />
+          <span>Uses a heart rate sensor</span>
+        </label>
+
+        <fieldset>
+          <legend>HR zones: bpm each zone starts at, from Garmin Connect</legend>
+          <div class="zones">
+            <label class="field"><span>Zone 1</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
+            <label class="field"><span>Zone 2</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
+            <label class="field"><span>Zone 3</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
+            <label class="field"><span>Zone 4</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
+            <label class="field"><span>Zone 5</span><input class="zone-input" type="number" inputmode="numeric" min="30" max="240" /></label>
+          </div>
+        </fieldset>
+
+        <label class="field">
+          <span>HR ceiling in bpm (optional): a banner shows after 30 s above this</span>
+          <input id="settings-ceiling" type="number" inputmode="numeric" min="30" max="240" />
+        </label>
+
+        <section class="panel">
+          <h2>Test heart rate</h2>
+          <p id="settings-hr-status" class="status"></p>
+          <p id="settings-hr-message" class="message"></p>
+          <button type="button" id="settings-connect" class="secondary">Connect heart rate</button>
+        </section>
+
+        <p id="settings-message" class="message"></p>
+        <div class="actions">
+          <button type="button" id="settings-back" class="secondary">Back</button>
+          <button type="submit" class="primary">Save</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

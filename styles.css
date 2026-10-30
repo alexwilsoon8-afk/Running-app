@@ -1,0 +1,502 @@
+:root {
+  color-scheme: dark;
+  --bg: #101418;
+  --surface: #1c2329;
+  --surface-raised: #2a333b;
+  --text: #ffffff;
+  --text-muted: #b8c4ce;
+  --accent: #1b7a3d;
+  --error: #ffb4ab;
+  --tile: rgba(0, 0, 0, 0.3);
+  --seg-warmup: #37474f;
+  --seg-run: #1b7a3d;
+  --seg-walk: #0b5cad;
+  --seg-cooldown: #37474f;
+  --seg-paused: #2a333b;
+  --zone0: #263238;
+  --zone1: #455a64;
+  --zone2: #0b5cad;
+  --zone3: #1b7a3d;
+  --zone4: #b35400;
+  --zone5: #b3141b;
+  --touch: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 20px;
+  line-height: 1.4;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  min-height: var(--touch);
+  min-width: var(--touch);
+  padding: 12px 28px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface-raised);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+
+.primary {
+  background: var(--accent);
+}
+
+.ghost {
+  background: var(--tile);
+  padding: 8px 24px;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 48px;
+  line-height: 1.15;
+}
+
+h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+p {
+  margin: 0;
+}
+
+/* Standard pages */
+
+.page {
+  max-width: 1040px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 32px 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.lead {
+  font-size: 26px;
+  color: var(--text-muted);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.status {
+  font-weight: 600;
+}
+
+.message {
+  color: var(--error);
+}
+
+.message:empty {
+  display: none;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+}
+
+.actions button {
+  min-width: 220px;
+  min-height: 80px;
+  font-size: 26px;
+}
+
+.profile-list {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-pick {
+  flex: 1;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px;
+  background: var(--surface);
+  text-align: left;
+}
+
+.add-runner {
+  min-height: 300px;
+  border: 3px dashed var(--text-muted);
+  background: transparent;
+  font-size: 32px;
+}
+
+.profile-name {
+  font-size: 56px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.profile-progress {
+  font-size: 28px;
+}
+
+.profile-session {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: var(--touch);
+  padding: 8px 14px;
+  border: 1px solid var(--text-muted);
+  border-radius: 10px;
+  background: var(--surface);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  min-height: var(--touch);
+}
+
+.check input {
+  width: 36px;
+  height: 36px;
+  accent-color: var(--accent);
+}
+
+#settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.zones {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stats {
+  flex: 1;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-content: center;
+}
+
+.stats div {
+  padding: 24px;
+  border-radius: 14px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.stats dd {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Run screen: 10% top bar, 60% centre, 30% tiles */
+
+.run {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(84px, 10%) minmax(0, 60fr) minmax(0, 30fr);
+  background: var(--seg-run);
+  transition: background-color 0.6s ease;
+  touch-action: manipulation;
+}
+
+.run[data-background="warmup"] { background: var(--seg-warmup); }
+.run[data-background="run"] { background: var(--seg-run); }
+.run[data-background="walk"] { background: var(--seg-walk); }
+.run[data-background="cooldown"] { background: var(--seg-cooldown); }
+.run[data-background="paused"] { background: var(--seg-paused); }
+.run[data-background="zone0"] { background: var(--zone0); }
+.run[data-background="zone1"] { background: var(--zone1); }
+.run[data-background="zone2"] { background: var(--zone2); }
+.run[data-background="zone3"] { background: var(--zone3); }
+.run[data-background="zone4"] { background: var(--zone4); }
+.run[data-background="zone5"] { background: var(--zone5); }
+
+.run-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 20px;
+}
+
+.run-info {
+  display: flex;
+  gap: 24px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-controls {
+  display: flex;
+  flex: none;
+  gap: 12px;
+}
+
+.run-centre {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.run-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.run-label {
+  font-size: clamp(64px, 13vh, 130px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* Digit height is about 0.72 of the font size, so 180px clears the 120px rule. */
+.run-countdown {
+  font-size: max(180px, 36vh);
+  font-weight: 800;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-paused {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+.banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 1;
+  max-width: calc(100% - 32px);
+  padding: 14px 36px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 40px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.banner.visible {
+  opacity: 1;
+}
+
+.banner.alert {
+  background: #ffffff;
+  color: #101418;
+}
+
+.run-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 0 20px 20px;
+  min-height: 0;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--tile);
+  font-weight: 400;
+}
+
+.tile:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.tile-title {
+  font-size: 20px;
+}
+
+.tile-value {
+  font-size: clamp(48px, 11vh, 96px);
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-value-text {
+  font-size: clamp(32px, 6vh, 56px);
+  text-align: center;
+}
+
+.tile-detail {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 14px;
+  touch-action: none;
+}
+
+.lock-hint {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 28px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.75);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.lock-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 6px;
+  background: var(--text);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.lock-overlay.holding .lock-progress {
+  transform: scaleX(1);
+  transition: transform 2s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .run,
+  .banner {
+    transition: none;
+  }
+}
+
+/* Narrow or portrait fallback; the tablet normally stays in landscape */
+@media (max-width: 700px) {
+  .profile-list,
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .zones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .run-countdown {
+    font-size: 180px;
+  }
+
+  .run-info {
+    display: none;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .profile-pick,
+  .add-runner {
+    min-height: 200px;
+  }
+}

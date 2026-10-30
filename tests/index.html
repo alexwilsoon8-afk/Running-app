@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>C25K logic tests</title>
+  </head>
+  <body>
+    <pre id="output"></pre>
+    <script type="module">
+      import {
+        cuesBetween, describeSession, formatClock, locate, nextDay, parseHeartRate,
+        spokenDuration, spokenSegment, totalSeconds, zoneFor,
+      } from "../js/engine.js";
+
+      const lines = [];
+      let failures = 0;
+      function check(name, actual, expected) {
+        const pass = JSON.stringify(actual) === JSON.stringify(expected);
+        if (!pass) failures++;
+        lines.push(`${pass ? "ok  " : "FAIL"} ${name}${pass ? "" : `: got ${JSON.stringify(actual)}, expected ${JSON.stringify(expected)}`}`);
+      }
+
+      const plan = await (await fetch("../plan.json")).json();
+      const session = (week, day) => plan.find((e) => e.week === week && e.day === day).segments;
+
+      // Minutes from the NHS plan, warm-up and cool-down included.
+      const nhsMinutes = {
+        "1.1": 28.5, "1.2": 28.5, "1.3": 28.5,
+        "2.1": 29, "2.2": 29, "2.3": 29,
+        "3.1": 25, "3.2": 25, "3.3": 25,
+        "4.1": 31.5, "4.2": 31.5, "4.3": 31.5,
+        "5.1": 31, "5.2": 31, "5.3": 30,
+        "6.1": 34, "6.2": 33, "6.3": 35,
+        "7.1": 35, "7.2": 35, "7.3": 35,
+        "8.1": 38, "8.2": 38, "8.3": 38,
+        "9.1": 40, "9.2": 40, "9.3": 40,
+      };
+      check("plan has 27 runs", plan.length, 27);
+      for (const entry of plan) {
+        const key = `${entry.week}.${entry.day}`;
+        check(`W${entry.week}D${entry.day} total`, totalSeconds(entry.segments) / 60, nhsMinutes[key]);
+        check(`W${entry.week}D${entry.day} warm-up and cool-down`,
+          [entry.segments[0], entry.segments.at(-1)],
+          [{ type: "warmup", seconds: 300 }, { type: "cooldown", seconds: 300 }]);
+      }
+      const runsIn = (s) => s.filter((x) => x.type === "run").map((x) => x.seconds / 60);
+      check("W1 runs", runsIn(session(1, 1)), Array(8).fill(1));
+      check("W2 runs", runsIn(session(2, 1)), Array(6).fill(1.5));
+      check("W3 runs", runsIn(session(3, 1)), [1.5, 3, 1.5, 3]);
+      check("W4 runs", runsIn(session(4, 1)), [3, 5, 3, 5]);
+      check("W5D1 runs", runsIn(session(5, 1)), [5, 5, 5]);
+      check("W5D2 runs", runsIn(session(5, 2)), [8, 8]);
+      check("W5D3 runs", runsIn(session(5, 3)), [20]);
+      check("W6D1 runs", runsIn(session(6, 1)), [5, 8, 5]);
+      check("W6D2 runs", runsIn(session(6, 2)), [10, 10]);
+      check("W6D3 runs", runsIn(session(6, 3)), [25]);
+      check("W9 runs", runsIn(session(9, 3)), [30]);
+
+      const s = session(3, 1);
+      check("locate start", locate(s, 0).index, 0);
+      check("locate boundary moves on", locate(s, 300).index, 1);
+      check("locate just before boundary", locate(s, 299.9).index, 0);
+      check("locate past the end", locate(s, 99999), null);
+
+      check("warning fires once at 10 s", cuesBetween(s, 289.9, 290.1).map((c) => c.kind), ["warning"]);
+      check("change fires at boundary", cuesBetween(s, 299.9, 300.1).map((c) => c.kind), ["change"]);
+      check("no cue mid-segment", cuesBetween(s, 100, 101), []);
+      check("final change has no next", cuesBetween(s, totalSeconds(s) - 0.1, totalSeconds(s) + 0.1)[0].next, null);
+
+      check("next day", nextDay(1, 1), { week: 1, day: 2 });
+      check("next week", nextDay(1, 3), { week: 2, day: 1 });
+      check("end of plan", nextDay(9, 3), null);
+
+      const zones = [100, 120, 140, 160, 180];
+      check("zone below 1", zoneFor(99, zones), 0);
+      check("zone 1 starts", zoneFor(100, zones), 1);
+      check("zone 3", zoneFor(150, zones), 3);
+      check("zone 5 and above", zoneFor(200, zones), 5);
+      check("no zones", zoneFor(150, null), null);
+      check("no bpm", zoneFor(null, zones), null);
+
+      check("clock", formatClock(90), "1:30");
+      check("clock rounds up", formatClock(89.2), "1:30");
+      check("clock never negative", formatClock(-1), "0:00");
+      check("spoken 60", spokenDuration(60), "1 minute");
+      check("spoken 90", spokenDuration(90), "90 seconds");
+      check("spoken 150", spokenDuration(150), "2 and a half minutes");
+      check("spoken 1200", spokenDuration(1200), "20 minutes");
+      check("spoken segment", spokenSegment({ type: "run", seconds: 90 }), "Run for 90 seconds");
+      check("session text", describeSession(session(1, 1)), "8 runs, 8 min running, 28.5 min total");
+
+      check("HR uint8", parseHeartRate(new DataView(new Uint8Array([0x00, 150]).buffer)), 150);
+      check("HR uint16", parseHeartRate(new DataView(new Uint8Array([0x01, 0x2c, 0x01]).buffer)), 300);
+      check("HR with RR data", parseHeartRate(new DataView(new Uint8Array([0x10, 72, 0x20, 0x03]).buffer)), 72);
+
+      lines.unshift(failures ? `${failures} FAILED` : `ALL PASSED (${lines.length})`);
+      document.getElementById("output").textContent = lines.join("\n");
+      document.title = failures ? "FAILED" : "PASSED";
+    </script>
+  </body>
+</html>
