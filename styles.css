@@ -292,6 +292,7 @@ legend {
   position: fixed;
   inset: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(84px, 10%) minmax(0, 60fr) minmax(0, 30fr);
   background: var(--seg-run);
   transition: background-color 0.6s ease;
@@ -332,6 +333,19 @@ legend {
   display: flex;
   flex: none;
   gap: 12px;
+  max-width: 60%;
+}
+
+.run-controls button {
+  flex: none;
+}
+
+#switch-button {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .run-centre {
@@ -350,7 +364,7 @@ legend {
 }
 
 .run-label {
-  font-size: clamp(64px, 13vh, 130px);
+  font-size: clamp(64px, min(13vh, 11vw), 130px);
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.02em;
@@ -358,7 +372,7 @@ legend {
 
 /* Digit height is about 0.72 of the font size, so 180px clears the 120px rule. */
 .run-countdown {
-  font-size: max(180px, 36vh);
+  font-size: max(180px, min(36vh, 30vw));
   font-weight: 800;
   line-height: 0.95;
   font-variant-numeric: tabular-nums;
@@ -429,14 +443,14 @@ legend {
 }
 
 .tile-value {
-  font-size: clamp(48px, 11vh, 96px);
+  font-size: clamp(48px, min(11vh, 9.5vw), 96px);
   font-weight: 800;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
 }
 
 .tile-value-text {
-  font-size: clamp(32px, 6vh, 56px);
+  font-size: clamp(32px, min(6vh, 5vw), 56px);
   text-align: center;
 }
 
@@ -489,7 +503,7 @@ legend {
   }
 }
 
-/* Narrow or portrait fallback; the tablet normally stays in landscape */
+/* Phone-width fallback; both tablet orientations use the rules above */
 @media (max-width: 700px) {
   .profile-list,
   .stats,
