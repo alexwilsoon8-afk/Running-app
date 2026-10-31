@@ -222,7 +222,7 @@ function beginRun(state) {
   hrHighSince = null;
   $("run-paused").hidden = true;
   $("run-main").hidden = false;
-  $("pause-button").hidden = false;
+  $("pause-button").textContent = "Pause";
   persistRun();
   requestWakeLock();
   showScreen("run");
@@ -368,7 +368,7 @@ function pauseRun() {
   persistRun();
   speechSynthesis.cancel();
   $("run-main").hidden = true;
-  $("pause-button").hidden = true;
+  $("pause-button").textContent = "Resume";
   $("run-paused").hidden = false;
   renderRun();
 }
@@ -379,7 +379,7 @@ function resumeRun() {
   lastElapsed = elapsedSeconds();
   $("run-paused").hidden = true;
   $("run-main").hidden = false;
-  $("pause-button").hidden = false;
+  $("pause-button").textContent = "Pause";
   renderRun();
 }
 
@@ -632,7 +632,7 @@ function bindEvents() {
   $("prep-back").addEventListener("click", renderHome);
   $("prep-connect").addEventListener("click", () => pairHr("prep-hr-message"));
   $("prep-start").addEventListener("click", () => startRun(selected));
-  $("pause-button").addEventListener("click", pauseRun);
+  $("pause-button").addEventListener("click", () => (run.resumedAt ? pauseRun() : resumeRun()));
   $("resume-button").addEventListener("click", resumeRun);
   $("end-button").addEventListener("click", () => endRun("early"));
   $("switch-button").addEventListener("click", switchRunner);

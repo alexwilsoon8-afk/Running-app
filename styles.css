@@ -469,6 +469,22 @@ legend {
   gap: 40px;
 }
 
+.run-paused .actions {
+  align-items: center;
+  justify-content: center;
+}
+
+#resume-button {
+  min-width: 320px;
+  min-height: 120px;
+  font-size: 44px;
+}
+
+#end-button {
+  border: 2px solid var(--text);
+  background: transparent;
+}
+
 .banner {
   position: absolute;
   top: 12px;
