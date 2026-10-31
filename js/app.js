@@ -17,6 +17,7 @@ import {
   totalSeconds,
   zoneFor,
 } from "./engine.js";
+import { createCheckin } from "./checkin.js";
 import { HeartRateMonitor } from "./heart-rate.js";
 import { beep, say, unlockAudio } from "./cues.js";
 import { loadData, newProfile, saveData } from "./store.js";
@@ -33,6 +34,7 @@ const $ = (id) => document.getElementById(id);
 const data = loadData();
 const hr = new HeartRateMonitor();
 let plan = [];
+let checkin = null;
 let run = null;
 let selected = null;
 let lastElapsed = 0;
@@ -86,6 +88,14 @@ function renderHome() {
     const planButton = card.querySelector(".profile-plan");
     planButton.setAttribute("aria-label", `${profile.name}'s plan`);
     planButton.addEventListener("click", () => openPlan(profile));
+    const journeyButton = card.querySelector(".profile-journey");
+    journeyButton.setAttribute("aria-label", `${profile.name}'s journey`);
+    journeyButton.addEventListener("click", () => checkin.open(profile));
+    if (checkin.isDue(profile)) {
+      card.querySelector(".profile-checkin").hidden = false;
+      card.querySelector(".checkin-start").addEventListener("click", () => checkin.start(profile));
+      card.querySelector(".checkin-later").addEventListener("click", () => checkin.dismiss(profile));
+    }
     const settings = card.querySelector(".profile-settings");
     settings.setAttribute("aria-label", `${profile.name} settings`);
     settings.addEventListener("click", () => openSettings(profile));
@@ -519,6 +529,7 @@ function openSettings(profile) {
   $("settings-title").textContent = profile ? `${profile.name}'s settings` : "New runner";
   $("settings-name").value = shown.name;
   $("settings-use-hr").checked = shown.useHr;
+  $("settings-track-weight").checked = shown.trackWeight ?? false;
   $("settings-age").value = shown.age ?? "";
   $("settings-max-hr").value = shown.maxHr ?? "";
   $("settings-resting-hr").value = shown.restingHr ?? "";
@@ -548,6 +559,7 @@ function setDeleteConfirm(open) {
 function deleteRunner() {
   data.profiles = data.profiles.filter((profile) => profile.id !== selected.id);
   data.runs = data.runs.filter((entry) => entry.runnerId !== selected.id);
+  data.checkins = data.checkins.filter((entry) => entry.runnerId !== selected.id);
   selected = null;
   saveData(data);
   renderHome();
@@ -600,6 +612,7 @@ function saveSettings(event) {
   }
   selected.name = name;
   selected.useHr = $("settings-use-hr").checked;
+  selected.trackWeight = $("settings-track-weight").checked;
   Object.assign(selected, readZoneDetails());
   selected.zones = entered ? zones : null;
   selected.hrCeiling = Number($("settings-ceiling").value) || null;
@@ -629,6 +642,7 @@ function renderZoneMethod() {
 
 function bindEvents() {
   $("plan-back").addEventListener("click", renderHome);
+  $("journey-back").addEventListener("click", renderHome);
   $("prep-back").addEventListener("click", renderHome);
   $("prep-connect").addEventListener("click", () => pairHr("prep-hr-message"));
   $("prep-start").addEventListener("click", () => startRun(selected));
@@ -679,6 +693,8 @@ function bindEvents() {
 async function init() {
   bindEvents();
   plan = await (await fetch("plan.json")).json();
+  const questions = await (await fetch("checkinQuestions.json")).json();
+  checkin = createCheckin({ data, plan, questions, showScreen, renderHome });
   if (data.active) offerResume();
   else renderHome();
   setInterval(tick, 200);

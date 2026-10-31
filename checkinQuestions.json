@@ -1,0 +1,26 @@
+[
+  {
+    "id": "energy",
+    "label": "Energy outside your runs",
+    "hint": "Work, home, getting through the day",
+    "options": ["Running on empty", "Up and down", "Steady", "More than usual"]
+  },
+  {
+    "id": "runFeel",
+    "label": "How the runs felt",
+    "hint": "Before and during, not just after",
+    "options": ["Dreaded them", "Got through them", "Mostly OK", "Enjoyed them"]
+  },
+  {
+    "id": "sleep",
+    "label": "Waking up this week",
+    "hint": "How you felt getting out of bed",
+    "options": ["Tired most days", "Tired some days", "Rested most days", "Rested every day"]
+  },
+  {
+    "id": "confidence",
+    "label": "Next week's longest run is {nextLongestMin} minutes",
+    "hint": "How does that sit with you?",
+    "options": ["Repeat this week first", "Nervous, but I'll try", "I can do it", "Bring it on"]
+  }
+]

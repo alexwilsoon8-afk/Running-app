@@ -12,6 +12,7 @@
         spokenDuration, spokenSegment, totalSeconds, zoneFor,
       } from "../js/engine.js";
 
+      const logic = await import("../js/checkin-logic.js");
       const lines = [];
       let failures = 0;
       function check(name, actual, expected) {
@@ -115,6 +116,64 @@
       check("HR uint8", parseHeartRate(new DataView(new Uint8Array([0x00, 150]).buffer)), 150);
       check("HR uint16", parseHeartRate(new DataView(new Uint8Array([0x01, 0x2c, 0x01]).buffer)), 300);
       check("HR with RR data", parseHeartRate(new DataView(new Uint8Array([0x10, 72, 0x20, 0x03]).buffer)), 72);
+
+      // Weekly check-in
+      const day = 86400000;
+      const at = (days) => new Date(Date.UTC(2026, 0, 1) + days * day).toISOString();
+      const fullRun = (d, week, dayNo) => ({
+        runnerId: "a", week, day: dayNo, completed: true, date: at(d), duration: totalSeconds(session(week, dayNo)),
+      });
+      const week1 = [fullRun(0, 1, 1), fullRun(2, 1, 2), fullRun(4, 1, 3)];
+      const profile = { id: "a", week: 2, day: 1, planComplete: false };
+      const checkinAt = (d, confidence, extra = {}) => ({
+        id: `c${d}`, runnerId: "a", planWeek: 1, date: at(d), wins: [],
+        answers: { energy: 2, runFeel: 2, sleep: 2, confidence }, ...extra,
+      });
+
+      check("completed runs, full session", logic.completedRuns(plan, week1[0]).length, 8);
+      check("completed runs stop at the end point", logic.completedRuns(plan, { ...week1[0], duration: 420 }), [60]);
+      check("partial run doesn't count", logic.completedRuns(plan, { ...week1[0], duration: 330 }), []);
+      check("ended early", logic.endedEarly(plan, { ...week1[0], duration: 420 }), true);
+      check("finished isn't early", logic.endedEarly(plan, week1[0]), false);
+      check("personal best", logic.personalBestMinutes(plan, week1), 1);
+      check("best never falls", logic.personalBestMinutes(plan, [fullRun(1, 3, 1), { ...fullRun(2, 1, 1) }]), 3);
+      check("running minutes", logic.runningMinutes(plan, week1), 24);
+      check("sessions are unique", logic.sessionsDone([...week1, week1[0]]), 3);
+      check("next longest, week 1", logic.nextLongestMinutes(plan, 1), 1.5);
+      check("next longest, week 4", logic.nextLongestMinutes(plan, 4), 20);
+      check("next longest, week 9", logic.nextLongestMinutes(plan, 9), 30);
+
+      check("not due before any run", logic.checkinDue(profile, [], [], Date.parse(at(1))), false);
+      check("not due after 2 runs", logic.checkinDue(profile, week1.slice(0, 2), [], Date.parse(at(3))), false);
+      check("due after 3 runs", logic.checkinDue(profile, week1, [], Date.parse(at(4))), true);
+      check("due after 7 days", logic.checkinDue(profile, week1.slice(0, 1), [], Date.parse(at(7))), true);
+      const done = checkinAt(5, 3);
+      check("not due straight after one", logic.checkinDue(profile, week1, [done], Date.parse(at(6))), false);
+      check("due 7 days after the last", logic.checkinDue(profile, week1, [done], Date.parse(at(12))), true);
+      const skip1 = logic.nextSkip(profile, week1, [], Date.parse(at(4)));
+      check("skipped: quiet the same day", logic.checkinDue({ ...profile, checkinSkip: skip1 }, week1, [], Date.parse(at(4.5))), false);
+      check("skipped: one reminder", logic.checkinDue({ ...profile, checkinSkip: skip1 }, week1, [], Date.parse(at(5.5))), true);
+      const skip2 = logic.nextSkip({ ...profile, checkinSkip: skip1 }, week1, [], Date.parse(at(6)));
+      check("skipped twice: no nagging", logic.checkinDue({ ...profile, checkinSkip: skip2 }, week1, [], Date.parse(at(30))), false);
+
+      const early = [{ ...week1[0], duration: 420 }, { ...week1[1], duration: 420 }, week1[2]];
+      check("confidence 1 repeats", logic.repeatDecision(plan, 1, null, week1), "repeat");
+      check("nervous first time advances", logic.repeatDecision(plan, 2, null, week1), "advance");
+      check("confident advances", logic.repeatDecision(plan, 3, null, week1), "advance");
+      check("confident with one early advances", logic.repeatDecision(plan, 4, null, [early[0]]), "advance");
+      check("two early runs prompt", logic.repeatDecision(plan, 3, null, early), "Two runs ended early this week. Repeat the week, or move on?");
+      check("low twice offers repeat", logic.repeatDecision(plan, 2, checkinAt(1, 2), week1).includes("Repeat"), true);
+      check("summary, same", logic.confidenceSummary(checkinAt(2, 2), checkinAt(1, 2), false), "Same as week 1, and still going");
+      check("summary, up", logic.confidenceSummary(checkinAt(2, 2), checkinAt(1, 1), false), "Up from week 1");
+      check("summary, repeat", logic.confidenceSummary(checkinAt(2, 1), checkinAt(1, 1), true), "Next week repeats this one. That's the plan working.");
+      check("short option", logic.shortOption("Nervous, but I'll try"), "Nervous");
+      const badgeCheckin = checkinAt(2, 3);
+      check("badge at 5 min", logic.unlockedBadge(plan, [fullRun(1, 4, 1)], [badgeCheckin], badgeCheckin), "5 min run");
+      const laterCheckin = checkinAt(3, 3);
+      check("no repeat badge", logic.unlockedBadge(plan, [fullRun(1, 4, 1)], [badgeCheckin, laterCheckin], laterCheckin), null);
+      check("rolling weight", logic.rollingWeight([90, 87, 84, 81]), [90, 88.5, 87, 84]);
+      check("wins sort by count", logic.winCounts([{ wins: ["A", "B"] }, { wins: ["B"] }])[0], { win: "B", count: 2 });
+      check("no numeric options", (await (await fetch("../checkinQuestions.json")).json()).every((q) => q.options.length === 4 && q.options.every((o) => !/\d/.test(o))), true);
 
       lines.unshift(failures ? `${failures} FAILED` : `ALL PASSED (${lines.length})`);
       document.getElementById("output").textContent = lines.join("\n");

@@ -23,12 +23,48 @@
           <span class="profile-progress"></span>
           <span class="profile-session"></span>
         </button>
+        <div class="profile-checkin" hidden>
+          <span>Weekly check-in: about a minute</span>
+          <button type="button" class="checkin-start primary">Start</button>
+          <button type="button" class="checkin-later secondary">Not now</button>
+        </div>
         <div class="profile-actions">
           <button type="button" class="profile-plan secondary">Plan</button>
+          <button type="button" class="profile-journey secondary">Journey</button>
           <button type="button" class="profile-settings secondary">Settings</button>
         </div>
       </section>
     </template>
+
+    <main id="screen-checkin" class="screen light-screen" hidden>
+      <div class="light-page">
+        <header class="light-header">
+          <div>
+            <h1>Weekly check-in</h1>
+            <p id="checkin-week" class="light-note"></p>
+          </div>
+          <div class="step-dots" aria-hidden="true">
+            <span class="step-dot"></span><span class="step-dot"></span><span class="step-dot"></span>
+          </div>
+        </header>
+        <div id="checkin-body" class="light-stack"></div>
+      </div>
+    </main>
+
+    <main id="screen-journey" class="screen light-screen" hidden>
+      <div class="light-page">
+        <header class="light-header">
+          <div>
+            <h1 id="journey-title"></h1>
+            <p id="journey-subtitle" class="light-note"></p>
+          </div>
+        </header>
+        <div id="journey-body" class="light-stack"></div>
+        <div class="light-actions">
+          <button type="button" id="journey-back" class="light-primary">Back</button>
+        </div>
+      </div>
+    </main>
 
     <main id="screen-plan" class="screen page" hidden>
       <h1 id="plan-title"></h1>
@@ -162,6 +198,10 @@
         <label class="field check">
           <input id="settings-use-hr" type="checkbox" />
           <span>Uses a heart rate sensor</span>
+        </label>
+        <label class="field check">
+          <input id="settings-track-weight" type="checkbox" />
+          <span>Track weight in weekly check-ins (optional)</span>
         </label>
 
         <section class="panel">

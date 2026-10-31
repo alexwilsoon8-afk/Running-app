@@ -28,6 +28,10 @@ On the watch, start a Treadmill activity and turn on Broadcast HR (Settings > Se
 
 Start the watch activity and Broadcast HR, pick a runner, connect, and tap **Start run**. The watch still records the run to Garmin Connect. Connecting is never required: the run works without HR.
 
+## Weekly check-in
+
+After a runner's third counted run of a week, or 7 days after their last check-in, their card offers a check-in of about a minute. Answers feed the **Journey** screen. Weight is off unless ticked in Settings. Questions are in `checkinQuestions.json`.
+
 ## Changing things
 
 - The plan is in `plan.json`. It follows the [NHS Couch to 5K plan](https://www.nhs.uk/better-health/get-active/get-running-with-couch-to-5k/couch-to-5k-running-plan/).

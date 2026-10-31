@@ -8,6 +8,7 @@ export function newProfile() {
     day: 1,
     planComplete: false,
     useHr: false,
+    trackWeight: false,
     age: null,
     maxHr: null,
     restingHr: null,
@@ -17,12 +18,12 @@ export function newProfile() {
 }
 
 function defaults() {
-  return { profiles: [], runs: [], active: null };
+  return { profiles: [], runs: [], checkins: [], active: null };
 }
 
 export function loadData() {
   try {
-    return JSON.parse(localStorage.getItem(KEY)) ?? defaults();
+    return { ...defaults(), ...JSON.parse(localStorage.getItem(KEY)) };
   } catch {
     return defaults();
   }

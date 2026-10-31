@@ -1,14 +1,17 @@
 // Uses the network when it can, so all the files come from one version, and
 // falls back to the saved copy so the app runs without Wi-Fi.
-const CACHE = "c25k-v2";
+const CACHE = "c25k-v3";
 const NETWORK_WAIT_MS = 3000;
 const FILES = [
   "./",
   "index.html",
   "styles.css",
   "plan.json",
+  "checkinQuestions.json",
   "manifest.webmanifest",
   "js/app.js",
+  "js/checkin.js",
+  "js/checkin-logic.js",
   "js/cues.js",
   "js/engine.js",
   "js/heart-rate.js",
