@@ -29,10 +29,10 @@ import { saveData } from "./store.js";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 const CHART_LINES = [
-  { id: "confidence", label: "Confidence", colour: "#1F3A5F", width: 6, dash: "" },
-  { id: "energy", label: "Energy", colour: "#2A9D8F", width: 4, dash: "" },
-  { id: "runFeel", label: "Runs", colour: "#E9A23B", width: 4, dash: "12 8" },
-  { id: "sleep", label: "Waking", colour: "#5B7DB1", width: 4, dash: "2 9" },
+  { id: "confidence", label: "Confidence", colour: "#1F3A5F", width: 6, dash: "", offset: -15 },
+  { id: "energy", label: "Energy", colour: "#2A9D8F", width: 4, dash: "", offset: -5 },
+  { id: "runFeel", label: "Runs", colour: "#E9A23B", width: 4, dash: "12 8", offset: 5 },
+  { id: "sleep", label: "Waking", colour: "#5B7DB1", width: 4, dash: "2 9", offset: 15 },
 ];
 
 function el(tag, className, text) {
@@ -384,7 +384,7 @@ export function createCheckin({ data, plan, questions, showScreen, renderHome })
   function renderChart(mine) {
     const card = el("div", "light-card");
     card.append(el("h3", "", "How you've felt"));
-    const [width, height, left, right, top, bottom] = [800, 300, 90, 30, 20, 40];
+    const [width, height, left, right, top, bottom] = [800, 320, 90, 30, 30, 50];
     const chart = svg("svg", { viewBox: `0 0 ${width} ${height}`, class: "feel-chart", role: "img", "aria-label": "How you've felt, by check-in" });
     const x = (i) => (mine.length === 1 ? (left + width - right) / 2 : left + (i * (width - left - right)) / (mine.length - 1));
     const y = (level) => top + ((4 - level) * (height - top - bottom)) / 3;
@@ -397,15 +397,17 @@ export function createCheckin({ data, plan, questions, showScreen, renderHome })
     mine.forEach((checkin, i) => {
       chart.append(svg("text", { x: x(i), y: height - 10, "text-anchor": "middle", class: "chart-text" }, `Wk ${checkin.planWeek}`));
     });
+    // Each line keeps its own small offset, so matching answers stay side by side.
     for (const line of CHART_LINES) {
-      const points = mine.map((checkin, i) => `${x(i)},${y(checkin.answers[line.id])}`).join(" ");
+      const lineY = (checkin) => y(checkin.answers[line.id]) + line.offset;
+      const points = mine.map((checkin, i) => `${x(i)},${lineY(checkin)}`).join(" ");
       if (mine.length > 1) {
         chart.append(svg("polyline", {
           points, fill: "none", stroke: line.colour, "stroke-width": line.width, "stroke-dasharray": line.dash, "stroke-linecap": "round",
         }));
       }
       mine.forEach((checkin, i) => {
-        chart.append(svg("circle", { cx: x(i), cy: y(checkin.answers[line.id]), r: line.width + 1, fill: line.colour }));
+        chart.append(svg("circle", { cx: x(i), cy: lineY(checkin), r: line.width + 1, fill: line.colour }));
       });
     }
     card.append(chart);
