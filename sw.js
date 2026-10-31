@@ -1,6 +1,7 @@
-// Serves from cache so the app runs without Wi-Fi, and refreshes the cache
-// in the background whenever the network is available.
-const CACHE = "c25k-v1";
+// Uses the network when it can, so all the files come from one version, and
+// falls back to the saved copy so the app runs without Wi-Fi.
+const CACHE = "c25k-v2";
+const NETWORK_WAIT_MS = 3000;
 const FILES = [
   "./",
   "index.html",
@@ -17,30 +18,36 @@ const FILES = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)));
+  const fresh = FILES.map((file) => new Request(file, { cache: "reload" }));
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(fresh)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim()),
+  );
 });
+
+async function respond(event) {
+  const { request } = event;
+  const cache = await caches.open(CACHE);
+  const cached =
+    (await cache.match(request)) ?? (request.mode === "navigate" ? await cache.match("./") : undefined);
+  const network = fetch(request.url, { cache: "no-cache" }).then((response) => {
+    if (response.ok) cache.put(request, response.clone());
+    return response;
+  });
+  if (!cached) return network;
+  event.waitUntil(network.catch(() => {}));
+  const slowNetwork = new Promise((resolve) => setTimeout(() => resolve(cached), NETWORK_WAIT_MS));
+  return Promise.race([network.catch(() => cached), slowNetwork]);
+}
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-  event.respondWith(
-    caches.open(CACHE).then(async (cache) => {
-      const cached = await cache.match(event.request, { ignoreSearch: true });
-      const refreshed = fetch(event.request)
-        .then((response) => {
-          if (response.ok) cache.put(event.request, response.clone());
-          return response;
-        })
-        .catch(() => cached);
-      if (cached) {
-        event.waitUntil(refreshed);
-        return cached;
-      }
-      return refreshed;
-    }),
-  );
+  event.respondWith(respond(event));
 });

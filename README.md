@@ -32,4 +32,4 @@ Start the watch activity and Broadcast HR, pick a runner, connect, and tap **Sta
 
 - The plan is in `plan.json`. It follows the [NHS Couch to 5K plan](https://www.nhs.uk/better-health/get-active/get-running-with-couch-to-5k/couch-to-5k-running-plan/).
 - To test the logic, serve this folder over HTTP and open `tests/index.html`.
-- After uploading changes, open the app online once. The tablet picks up the new version the next time it opens.
+- After publishing changes, open the app online and it picks up the new version. Without a network, it uses the saved copy.

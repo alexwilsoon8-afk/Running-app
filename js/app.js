@@ -683,7 +683,17 @@ async function init() {
   else renderHome();
   setInterval(tick, 200);
   navigator.storage?.persist?.();
+  reloadOnUpdate();
   navigator.serviceWorker?.register("sw.js");
+}
+
+// A new version takes over while this one is open, so reload to match it.
+// Only from the home screen: never during a run or while filling in a form.
+function reloadOnUpdate() {
+  if (!navigator.serviceWorker?.controller) return;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!$("screen-home").hidden) location.reload();
+  });
 }
 
 init();
